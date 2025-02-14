@@ -1,7 +1,9 @@
 ﻿#include "Matrix4x4.h"
+#include "Vector3.h"
+#include <assert.h>
 
 // 4x4行列の積
-Matrix4x4 Multiply(Matrix4x4 m1, Matrix4x4 m2) {
+Matrix4x4 Multiply(const Matrix4x4 m1, const Matrix4x4 m2) {
 
 	// 戻り値
 	Matrix4x4 result;
@@ -32,7 +34,7 @@ Matrix4x4 Multiply(Matrix4x4 m1, Matrix4x4 m2) {
 }
 
 // 4x4逆行列
-Matrix4x4 Inverse(Matrix4x4 m1) {
+Matrix4x4 Inverse(const Matrix4x4 m1) {
 
 	// 戻り値
 	Matrix4x4 result;
@@ -91,5 +93,77 @@ Matrix4x4 Inverse(Matrix4x4 m1) {
 		m1.m[0][2] * m1.m[1][1] * m1.m[2][0] - m1.m[0][1] * m1.m[1][0] * m1.m[2][2] - m1.m[0][0] * m1.m[1][2] * m1.m[2][1];
 
 	// 計算結果を返却
+	return result;
+}
+
+// 4x4拡大縮小行列
+Matrix4x4 MakeScaleMatrix(Vector3 scale) {
+
+	// 戻り値
+	Matrix4x4 result;
+
+	// 行列の中身を初期化
+	for (int i = 0; i < 4; ++i) {
+		for (int j = 0; j < 4; ++j) {
+			result.m[i][j] = 0.0f;
+		}
+	}
+
+	// 拡縮の計算
+	result.m[0][0] = scale.x;
+	result.m[1][1] = scale.y;
+	result.m[2][2] = scale.z;
+	result.m[3][3] = 1.0f;
+
+	// 返却する値
+	return result;
+}
+
+// 4x4平行移動行列
+Matrix4x4 Translate(Vector3 translate) {
+
+	// 戻り値
+	Matrix4x4 result;
+
+	// 行列の中身を初期化
+	for (int i = 0; i < 4; ++i) {
+		for (int j = 0; j < 4; ++j) {
+			result.m[i][j] = 0.0f;
+		}
+	}
+
+	// 平行移動行列の作成
+	result.m[0][0] = 1.0f;
+	result.m[1][1] = 1.0f;
+	result.m[2][2] = 1.0f;
+	result.m[3][3] = 1.0f;
+
+	result.m[0][0] = translate.x;
+	result.m[0][1] = translate.y;
+	result.m[0][2] = translate.z;
+
+	// 返却する値
+	return result;
+}
+
+// Vector3を同時座標系に変換
+Vector3 Transform(const Vector3& vector, const Matrix4x4& matrix) {
+
+	// 戻り値
+	Vector3 result;
+
+	// 計算
+	result.x = vector.x * matrix.m[0][0] + vector.y * matrix.m[1][0] + vector.z * matrix.m[2][0] + 1.0f * matrix.m[3][0];
+	result.y = vector.x * matrix.m[0][1] + vector.y * matrix.m[1][1] + vector.z * matrix.m[2][1] + 1.0f * matrix.m[3][1];
+	result.z = vector.x * matrix.m[0][2] + vector.y * matrix.m[1][2] + vector.z * matrix.m[2][2] + 1.0f * matrix.m[3][2];
+	float w = vector.x * matrix.m[0][3] + vector.y * matrix.m[1][3] + vector.z * matrix.m[2][3] + 1.0f * matrix.m[3][3];
+
+	// アサーションチェック
+	assert(w != 0.0f);
+	result.x /= w;
+	result.y /= w;
+	result.z /= w;
+
+	// 返却する値
 	return result;
 }
