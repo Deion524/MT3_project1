@@ -297,24 +297,3 @@ Vector3 Transform(const Vector3& vector, const Matrix4x4& matrix) {
 	// 返却する値
 	return result;
 }
-
-/*==================================================
-					透視投影行列
-==================================================*/
-//Matrix4x4 MakePerspectiveForMatrix(float fovY, float aspectRatio, float nearClip, float farClip) {
-//
-//	// 戻り値
-//	Matrix4x4 result;
-//
-//	// 行列の中身を初期化
-//	for (int i = 0; i < 4; ++i) {
-//		for (int j = 0; j < 4; ++j) {
-//			result.m[i][j] = 0.0f;
-//		}
-//	}
-//	// 透視投影行列の作成
-//
-//
-//	// 返却する値
-//	return result;
-//}
