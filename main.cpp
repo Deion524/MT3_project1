@@ -1,4 +1,5 @@
 #include <Novice.h>
+#include "Camera.h"
 
 const char kWindowTitle[] = "LC1A_09_ジェイムズディアンカイ_MT3_00-00";
 
@@ -11,6 +12,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// キー入力結果を受け取る箱
 	char keys[256] = {0};
 	char preKeys[256] = {0};
+
+	// インスタンス生成
+	Camera* camera = new Camera();
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
@@ -45,6 +49,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			break;
 		}
 	}
+
+	delete camera;
 
 	// ライブラリの終了
 	Novice::Finalize();
