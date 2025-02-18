@@ -1,9 +1,6 @@
 ﻿#pragma once
 #include "Matrix4x4.h"
 #include "Vector3.h"
-#include <assert.h>
-//#define _USE_MATH_DEFINES
-#include <math.h>
 
 class Camera{
 public:
@@ -13,9 +10,9 @@ public:
 	// メンバ関数
 	
 	// 行列の積
-	Matrix4x4 Multiply(const Matrix4x4 m1, const Matrix4x4 m2);
+	Matrix4x4 Multiply(Matrix4x4 m1, Matrix4x4 m2);
 	// 逆行列
-	Matrix4x4 Inverse(const Matrix4x4 m1);
+	Matrix4x4 Inverse(Matrix4x4 m1);
 	// 拡大縮小行列
 	Matrix4x4 MakeScaleMatrix(Vector3 scale);
 	// 平行移動行列
@@ -27,18 +24,21 @@ public:
 	// 回転行列(X軸中心)
 	Matrix4x4 MakeYZRotateMatrix(float theta);
 	// アフィン行列
-	Matrix4x4 MakeAffineMatrix(Vector3 scale, Matrix4x4 rotateMatrix, Vector3 translate);
+	Matrix4x4 MakeAffineMatrix(Vector3 scale, Vector3 theta, Vector3 translate);
 	// 同時座標に変換
 	Vector3 Transform(const Vector3& vector, const Matrix4x4& matrix);
+	// スクリーンに行列の中身を描画
+	void Matrix4x4ScreenPrintf(Matrix4x4 matrix, float posX, float posY);
 	 
 	// 正射影行列
-	Matrix4x4 MakeOrthographicMatrix(float left, float top, float right, float bottom,float near,float far);
+	Matrix4x4 MakeOrthographicMatrix(float left, float top, float right, float bottom,float nearVal,float farVal);
 	// ビューポート行列
 	Matrix4x4 MakeViewPortMatrix(float left, float top, float width, float height,float minDepth,float maxDepth);
 	// 透視投影行列
 	Matrix4x4 MakePerspectiveForMatrix(float fovY, float aspectRatio, float nearClip, float farClip);
 
-private:
+//private:
+public:
 	// メンバ変数
 
 	// ワールド原点
@@ -58,6 +58,11 @@ private:
 
 	// カメラの位置
 	Vector3 pos_;
+	// 拡縮率
+	Vector3 scale_;
+	// 角度
+	Vector3 theta_;
+
 	// カメラの幅高さ
 	float width_;
 	float height_;

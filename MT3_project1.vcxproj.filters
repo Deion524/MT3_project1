@@ -17,6 +17,12 @@
     <Filter Include="Vector">
       <UniqueIdentifier>{86fbffea-3730-4a9c-a017-4dbe5567b543}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Matrix">
+      <UniqueIdentifier>{ce9a4652-567b-42b5-ba09-6c82dc7f59b4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Camera">
+      <UniqueIdentifier>{a3242f57-63ee-475b-bcb3-92d82dca3702}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
@@ -24,7 +30,7 @@
       <Filter>KamataEngine\Adapter</Filter>
     </ClCompile>
     <ClCompile Include="Camera.cpp">
-      <Filter>KamataEngine</Filter>
+      <Filter>Camera</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -112,7 +118,11 @@
     <ClInclude Include="Vector3.h">
       <Filter>Vector</Filter>
     </ClInclude>
-    <ClInclude Include="Matrix4x4.h" />
-    <ClInclude Include="Camera.h" />
+    <ClInclude Include="Matrix4x4.h">
+      <Filter>Matrix</Filter>
+    </ClInclude>
+    <ClInclude Include="Camera.h">
+      <Filter>Camera</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
