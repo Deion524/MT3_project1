@@ -37,6 +37,9 @@ public:
 	// 透視投影行列
 	Matrix4x4 MakePerspectiveForMatrix(float fovY, float aspectRatio, float nearClip, float farClip);
 
+	// 更新処理
+	void Update();
+
 //private:
 public:
 	// メンバ変数
@@ -45,6 +48,8 @@ public:
 	Vector3 worldPos_;
 	// ワールド行列
 	Matrix4x4 worldMatrix_;
+	// カメラ行列
+	Matrix4x4 cameraMatrix_;
 	// ビュー行列
 	Matrix4x4 viewMatrix_;
 	// 正射影行列
@@ -54,7 +59,7 @@ public:
 	// ビューポート行列
 	Matrix4x4 viewportMatrix_;
 	// スクリーン
-	Matrix4x4 wvpVpMatrix_;
+	Matrix4x4 wvppVpMatrix_;
 
 	// カメラの位置
 	Vector3 pos_;
@@ -67,9 +72,9 @@ public:
 	float width_;
 	float height_;
 	// 近平面
-	float near_;
+	float nearClip_;
 	// 遠平面
-	float far_;
+	float farClip_;
 	// 画角
 	float fovY_;
 	// アスペクト比

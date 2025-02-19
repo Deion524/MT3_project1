@@ -12,20 +12,55 @@ Camera::Camera() {
 
 	// ワールド原点
 	worldPos_ = { 0.0,0.0f,0.0f };
+	// 各行列の初期化
+	for (int i = 0; i < 4; ++i) {
+		for (int j = 0; j < 4; ++j) {
+			// ワールド行列
+			worldMatrix_.m[i][j] = 0.0f;
+			// カメラ行列
+			cameraMatrix_.m[i][j] = 0.0f;
+			// ビュー行列
+			viewMatrix_.m[i][j] = 0.0f;
+			// 正射影行列
+			projectionMatrix_.m[i][j] = 0.0f;
+			// 透視投影行列
+			perspectiveDevide_.m[i][j] = 0.0f;
+			// ビューポート行列
+			viewportMatrix_.m[i][j] = 0.0f;
+			// スクリーン
+			wvppVpMatrix_.m[i][j] = 0.0f;
+		}
+	}
+
 	// カメラの位置
-	pos_ = { 12.0f,89.0f,43.0f };
+	pos_ = { 500.0f,350.0f,10.0f };
 	// 拡縮率
 	scale_ = { 1.0f,1.0f,1.0f };
 	// 角度
 	theta_ = { 0.0f,0.0f,0.0f };
-	// ワールド行列
-	for (int i = 0; i < 4; ++i) {
-		for (int j = 0; j < 4; ++j) {
-			worldMatrix_.m[i][j] = 1.0f;
-		}
-	}
 
-	// グリッド線
+	// カメラの幅高さ
+	width_ = 1280.0f;;
+	height_ = 720.0f;
+	// 近平面
+	nearClip_ = 0.1f;
+	// 遠平面
+	farClip_ = 0.8f;
+	// 画角
+	fovY_ = 1.0f;
+	// アスペクト比
+	aspectRatio_ = height_ / width_;
+	// 最小深度値
+	minDepth_ = 0.0f;
+	// 最大深度値
+	maxDepth_ = 1.0f;
+
+	// グリッド線(横)
+	gridLineGreenStart_ = { -width_,0.0f,0.0f };
+	gridLineGreenEnd_ = { width_,0.0f,0.0f };
+	// グリッド線(縦)
+	gridLineRedStart_ = { 0.0f,-height_,0.0f };
+	gridLineRedEnd_ = { 0.0f,height_,0.0f };
 
 
 }
@@ -47,23 +82,23 @@ Matrix4x4 Camera::Multiply(const Matrix4x4 m1, const Matrix4x4 m2) {
 	// 4x4行列の積
 	// 1行目
 	result.m[0][0] = m1.m[0][0] * m2.m[0][0] + m1.m[0][1] * m2.m[1][0] + m1.m[0][2] * m2.m[2][0] + m1.m[0][3] * m2.m[3][0];
-	result.m[1][0] = m1.m[0][0] * m2.m[0][1] + m1.m[0][1] * m2.m[1][1] + m1.m[0][2] * m2.m[2][1] + m1.m[0][3] * m2.m[3][1];
-	result.m[2][0] = m1.m[0][0] * m2.m[0][2] + m1.m[0][1] * m2.m[1][2] + m1.m[0][2] * m2.m[2][2] + m1.m[0][3] * m2.m[3][2];
-	result.m[3][0] = m1.m[0][0] * m2.m[0][3] + m1.m[0][1] * m2.m[1][3] + m1.m[0][2] * m2.m[2][3] + m1.m[0][3] * m2.m[3][3];
+	result.m[0][1] = m1.m[0][0] * m2.m[0][1] + m1.m[0][1] * m2.m[1][1] + m1.m[0][2] * m2.m[2][1] + m1.m[0][3] * m2.m[3][1];
+	result.m[0][2] = m1.m[0][0] * m2.m[0][2] + m1.m[0][1] * m2.m[1][2] + m1.m[0][2] * m2.m[2][2] + m1.m[0][3] * m2.m[3][2];
+	result.m[0][3] = m1.m[0][0] * m2.m[0][3] + m1.m[0][1] * m2.m[1][3] + m1.m[0][2] * m2.m[2][3] + m1.m[0][3] * m2.m[3][3];
 	// 2行目
-	result.m[0][1] = m1.m[1][0] * m2.m[0][0] + m1.m[1][1] * m2.m[1][0] + m1.m[1][2] * m2.m[2][0] + m1.m[1][3] * m2.m[3][0];
+	result.m[1][0] = m1.m[1][0] * m2.m[0][0] + m1.m[1][1] * m2.m[1][0] + m1.m[1][2] * m2.m[2][0] + m1.m[1][3] * m2.m[3][0];
 	result.m[1][1] = m1.m[1][0] * m2.m[0][1] + m1.m[1][1] * m2.m[1][1] + m1.m[1][2] * m2.m[2][1] + m1.m[1][3] * m2.m[3][1];
-	result.m[2][1] = m1.m[1][0] * m2.m[0][2] + m1.m[1][1] * m2.m[1][2] + m1.m[1][2] * m2.m[2][2] + m1.m[1][3] * m2.m[3][2];
-	result.m[3][1] = m1.m[1][0] * m2.m[0][3] + m1.m[1][1] * m2.m[1][3] + m1.m[1][2] * m2.m[2][3] + m1.m[1][3] * m2.m[3][3];
+	result.m[1][2] = m1.m[1][0] * m2.m[0][2] + m1.m[1][1] * m2.m[1][2] + m1.m[1][2] * m2.m[2][2] + m1.m[1][3] * m2.m[3][2];
+	result.m[1][3] = m1.m[1][0] * m2.m[0][3] + m1.m[1][1] * m2.m[1][3] + m1.m[1][2] * m2.m[2][3] + m1.m[1][3] * m2.m[3][3];
 	// 3行目
-	result.m[0][2] = m1.m[2][0] * m2.m[0][0] + m1.m[2][1] * m2.m[1][0] + m1.m[2][2] * m2.m[2][0] + m1.m[2][3] * m2.m[3][0];
-	result.m[1][2] = m1.m[2][0] * m2.m[0][1] + m1.m[2][1] * m2.m[1][1] + m1.m[2][2] * m2.m[2][1] + m1.m[2][3] * m2.m[3][1];
+	result.m[2][0] = m1.m[2][0] * m2.m[0][0] + m1.m[2][1] * m2.m[1][0] + m1.m[2][2] * m2.m[2][0] + m1.m[2][3] * m2.m[3][0];
+	result.m[2][1] = m1.m[2][0] * m2.m[0][1] + m1.m[2][1] * m2.m[1][1] + m1.m[2][2] * m2.m[2][1] + m1.m[2][3] * m2.m[3][1];
 	result.m[2][2] = m1.m[2][0] * m2.m[0][2] + m1.m[2][1] * m2.m[1][2] + m1.m[2][2] * m2.m[2][2] + m1.m[2][3] * m2.m[3][2];
-	result.m[3][2] = m1.m[2][0] * m2.m[0][3] + m1.m[2][1] * m2.m[1][3] + m1.m[2][2] * m2.m[2][3] + m1.m[2][3] * m2.m[3][3];
+	result.m[2][3] = m1.m[2][0] * m2.m[0][3] + m1.m[2][1] * m2.m[1][3] + m1.m[2][2] * m2.m[2][3] + m1.m[2][3] * m2.m[3][3];
 	// 4行目
-	result.m[0][3] = m1.m[3][0] * m2.m[0][0] + m1.m[3][1] * m2.m[1][0] + m1.m[3][2] * m2.m[2][0] + m1.m[3][3] * m2.m[3][0];
-	result.m[1][3] = m1.m[3][0] * m2.m[0][1] + m1.m[3][1] * m2.m[1][1] + m1.m[3][2] * m2.m[2][1] + m1.m[3][3] * m2.m[3][1];
-	result.m[2][3] = m1.m[3][0] * m2.m[0][2] + m1.m[3][1] * m2.m[1][2] + m1.m[3][2] * m2.m[2][2] + m1.m[3][3] * m2.m[3][2];
+	result.m[3][0] = m1.m[3][0] * m2.m[0][0] + m1.m[3][1] * m2.m[1][0] + m1.m[3][2] * m2.m[2][0] + m1.m[3][3] * m2.m[3][0];
+	result.m[3][1] = m1.m[3][0] * m2.m[0][1] + m1.m[3][1] * m2.m[1][1] + m1.m[3][2] * m2.m[2][1] + m1.m[3][3] * m2.m[3][1];
+	result.m[3][2] = m1.m[3][0] * m2.m[0][2] + m1.m[3][1] * m2.m[1][2] + m1.m[3][2] * m2.m[2][2] + m1.m[3][3] * m2.m[3][2];
 	result.m[3][3] = m1.m[3][0] * m2.m[0][3] + m1.m[3][1] * m2.m[1][3] + m1.m[3][2] * m2.m[2][3] + m1.m[3][3] * m2.m[3][3];
 
 	// 計算結果を返却
@@ -84,49 +119,49 @@ Matrix4x4 Camera::Inverse(const Matrix4x4 m1) {
 	result.m[0][0] = m1.m[1][1] * m1.m[2][2] * m1.m[3][3] + m1.m[1][2] * m1.m[2][3] * m1.m[3][1] + m1.m[1][3] * m1.m[2][1] * m1.m[3][2] -
 		m1.m[1][3] * m1.m[2][2] * m1.m[3][1] - m1.m[1][2] * m1.m[2][1] * m1.m[3][3] - m1.m[1][1] * m1.m[2][3] * m1.m[3][2];
 
-	result.m[1][0] = -m1.m[0][1] * m1.m[2][2] * m1.m[3][3] - m1.m[0][2] * m1.m[2][3] * m1.m[3][2] - m1.m[0][3] * m1.m[2][1] * m1.m[3][2] +
+	result.m[0][1] = -m1.m[0][1] * m1.m[2][2] * m1.m[3][3] - m1.m[0][2] * m1.m[2][3] * m1.m[3][2] - m1.m[0][3] * m1.m[2][1] * m1.m[3][2] +
 		m1.m[0][3] * m1.m[2][2] * m1.m[3][1] + m1.m[0][2] * m1.m[2][1] * m1.m[3][3] + m1.m[0][1] * m1.m[2][3] * m1.m[3][2];
 
-	result.m[2][0] = m1.m[0][1] * m1.m[1][2] * m1.m[3][3] + m1.m[0][2] * m1.m[1][3] * m1.m[3][1] + m1.m[0][3] * m1.m[1][1] * m1.m[3][2] -
+	result.m[0][2] = m1.m[0][1] * m1.m[1][2] * m1.m[3][3] + m1.m[0][2] * m1.m[1][3] * m1.m[3][1] + m1.m[0][3] * m1.m[1][1] * m1.m[3][2] -
 		m1.m[0][3] * m1.m[1][2] * m1.m[3][1] - m1.m[0][2] * m1.m[1][1] * m1.m[3][3] - m1.m[0][1] * m1.m[1][3] * m1.m[3][2];
 
-	result.m[3][0] = -m1.m[0][1] * m1.m[1][2] * m1.m[2][3] - m1.m[0][2] * m1.m[1][3] * m1.m[2][1] - m1.m[0][3] * m1.m[1][1] * m1.m[2][2] +
+	result.m[0][3] = -m1.m[0][1] * m1.m[1][2] * m1.m[2][3] - m1.m[0][2] * m1.m[1][3] * m1.m[2][1] - m1.m[0][3] * m1.m[1][1] * m1.m[2][2] +
 		m1.m[0][3] * m1.m[1][2] * m1.m[2][1] + m1.m[0][2] * m1.m[1][1] * m1.m[2][3] + m1.m[0][1] * m1.m[1][3] * m1.m[2][2];
 
 	// 2行目
-	result.m[0][1] = -m1.m[1][0] * m1.m[2][2] * m1.m[3][3] - m1.m[1][2] * m1.m[2][3] * m1.m[3][0] - m1.m[1][3] * m1.m[2][0] * m1.m[3][2] +
+	result.m[1][0] = -m1.m[1][0] * m1.m[2][2] * m1.m[3][3] - m1.m[1][2] * m1.m[2][3] * m1.m[3][0] - m1.m[1][3] * m1.m[2][0] * m1.m[3][2] +
 		m1.m[1][3] * m1.m[2][2] * m1.m[3][0] + m1.m[1][2] * m1.m[2][0] * m1.m[3][3] + m1.m[1][0] * m1.m[2][3] * m1.m[3][2];
 
 	result.m[1][1] = m1.m[0][0] * m1.m[2][2] * m1.m[3][3] + m1.m[0][2] * m1.m[2][3] * m1.m[3][0] + m1.m[0][3] * m1.m[2][0] * m1.m[3][2] -
 		m1.m[0][3] * m1.m[2][2] * m1.m[3][0] - m1.m[0][2] * m1.m[2][0] * m1.m[3][3] - m1.m[0][0] * m1.m[2][3] * m1.m[3][2];
 
-	result.m[2][1] = -m1.m[0][0] * m1.m[1][2] * m1.m[3][3] - m1.m[0][2] * m1.m[1][3] * m1.m[3][0] - m1.m[0][3] * m1.m[1][0] * m1.m[3][2] +
+	result.m[1][2] = -m1.m[0][0] * m1.m[1][2] * m1.m[3][3] - m1.m[0][2] * m1.m[1][3] * m1.m[3][0] - m1.m[0][3] * m1.m[1][0] * m1.m[3][2] +
 		m1.m[0][3] * m1.m[1][2] * m1.m[3][0] + m1.m[0][2] * m1.m[1][0] * m1.m[3][3] + m1.m[0][0] * m1.m[1][3] * m1.m[3][2];
 
-	result.m[3][1] = m1.m[0][0] * m1.m[1][2] * m1.m[2][3] + m1.m[0][2] * m1.m[1][3] * m1.m[2][0] + m1.m[0][3] * m1.m[1][0] * m1.m[2][2] -
+	result.m[1][3] = m1.m[0][0] * m1.m[1][2] * m1.m[2][3] + m1.m[0][2] * m1.m[1][3] * m1.m[2][0] + m1.m[0][3] * m1.m[1][0] * m1.m[2][2] -
 		m1.m[0][3] * m1.m[1][2] * m1.m[2][0] - m1.m[0][2] * m1.m[1][0] * m1.m[2][3] - m1.m[0][0] * m1.m[1][3] * m1.m[2][2];
 
 	// 3行目
-	result.m[0][2] = m1.m[1][0] * m1.m[2][1] * m1.m[3][3] + m1.m[1][1] * m1.m[2][3] * m1.m[3][0] + m1.m[1][3] * m1.m[2][0] * m1.m[3][1] -
+	result.m[2][0] = m1.m[1][0] * m1.m[2][1] * m1.m[3][3] + m1.m[1][1] * m1.m[2][3] * m1.m[3][0] + m1.m[1][3] * m1.m[2][0] * m1.m[3][1] -
 		m1.m[1][3] * m1.m[2][1] * m1.m[3][0] - m1.m[1][1] * m1.m[2][0] * m1.m[3][3] - m1.m[1][0] * m1.m[2][3] * m1.m[3][1];
 
-	result.m[1][2] = -m1.m[0][0] * m1.m[2][1] * m1.m[3][3] - m1.m[0][1] * m1.m[2][3] * m1.m[3][0] - m1.m[0][3] * m1.m[2][0] * m1.m[3][1] +
+	result.m[2][1] = -m1.m[0][0] * m1.m[2][1] * m1.m[3][3] - m1.m[0][1] * m1.m[2][3] * m1.m[3][0] - m1.m[0][3] * m1.m[2][0] * m1.m[3][1] +
 		m1.m[0][3] * m1.m[2][1] * m1.m[3][0] + m1.m[0][1] * m1.m[2][0] * m1.m[3][3] + m1.m[0][0] * m1.m[2][3] * m1.m[3][1];
 
 	result.m[2][2] = m1.m[0][0] * m1.m[1][1] * m1.m[3][3] + m1.m[0][1] * m1.m[1][3] * m1.m[3][0] + m1.m[0][3] * m1.m[1][0] * m1.m[3][1] -
 		m1.m[0][3] * m1.m[1][1] * m1.m[3][0] - m1.m[0][1] * m1.m[1][0] * m1.m[3][3] - m1.m[0][0] * m1.m[1][3] * m1.m[3][1];
 
-	result.m[3][2] = -m1.m[0][0] * m1.m[1][1] * m1.m[2][3] - m1.m[0][1] * m1.m[1][3] * m1.m[2][0] - m1.m[0][3] * m1.m[1][0] * m1.m[2][1] +
+	result.m[2][3] = -m1.m[0][0] * m1.m[1][1] * m1.m[2][3] - m1.m[0][1] * m1.m[1][3] * m1.m[2][0] - m1.m[0][3] * m1.m[1][0] * m1.m[2][1] +
 		m1.m[0][3] * m1.m[1][1] * m1.m[2][0] + m1.m[0][1] * m1.m[1][0] * m1.m[2][3] + m1.m[0][0] * m1.m[1][3] * m1.m[2][1];
 
 	// 4行目
-	result.m[0][3] = -m1.m[1][0] * m1.m[2][1] * m1.m[3][2] - m1.m[1][1] * m1.m[2][2] * m1.m[3][0] - m1.m[1][2] * m1.m[2][0] * m1.m[3][1] +
+	result.m[3][0] = -m1.m[1][0] * m1.m[2][1] * m1.m[3][2] - m1.m[1][1] * m1.m[2][2] * m1.m[3][0] - m1.m[1][2] * m1.m[2][0] * m1.m[3][1] +
 		m1.m[1][2] * m1.m[2][1] * m1.m[3][0] + m1.m[1][1] * m1.m[2][0] * m1.m[3][2] + m1.m[1][0] * m1.m[2][2] * m1.m[3][1];
 
-	result.m[1][3] = m1.m[0][0] * m1.m[2][1] * m1.m[3][2] + m1.m[0][1] * m1.m[2][2] * m1.m[3][0] + m1.m[0][2] * m1.m[2][0] * m1.m[3][1] -
+	result.m[3][1] = m1.m[0][0] * m1.m[2][1] * m1.m[3][2] + m1.m[0][1] * m1.m[2][2] * m1.m[3][0] + m1.m[0][2] * m1.m[2][0] * m1.m[3][1] -
 		m1.m[0][2] * m1.m[2][1] * m1.m[3][0] - m1.m[0][1] * m1.m[2][0] * m1.m[3][2] - m1.m[0][0] * m1.m[2][2] * m1.m[3][1];
 
-	result.m[2][3] = -m1.m[0][0] * m1.m[1][1] * m1.m[3][2] - m1.m[0][1] * m1.m[1][2] * m1.m[3][0] - m1.m[0][2] * m1.m[1][0] * m1.m[3][1] +
+	result.m[3][2] = -m1.m[0][0] * m1.m[1][1] * m1.m[3][2] - m1.m[0][1] * m1.m[1][2] * m1.m[3][0] - m1.m[0][2] * m1.m[1][0] * m1.m[3][1] +
 		m1.m[0][2] * m1.m[1][1] * m1.m[3][0] + m1.m[0][1] * m1.m[1][2] * m1.m[2][0] + m1.m[0][0] * m1.m[1][2] * m1.m[3][1];
 
 	result.m[3][3] = m1.m[0][0] * m1.m[1][1] * m1.m[2][2] + m1.m[0][1] * m1.m[1][2] * m1.m[2][0] + m1.m[0][2] * m1.m[1][0] * m1.m[2][1] -
@@ -385,7 +420,7 @@ Vector3 Camera::Transform(const Vector3& vector, const Matrix4x4& matrix) {
 void Camera::Matrix4x4ScreenPrintf(Matrix4x4 matrix, float posX, float posY) {
 	for (int i = 0; i < 4; ++i) {
 		for (int j = 0; j < 4; ++j) {
-			Novice::ScreenPrintf(static_cast<int>(posX + 128.0f * j), static_cast<int>(posY + 32.0f * i), "%0.2f", matrix.m[j][i]);
+			Novice::ScreenPrintf(static_cast<int>(posX + 128.0f * j), static_cast<int>(posY + 32.0f * i), "%0.2f", matrix.m[i][j]);
 		}
 	}
 }
@@ -409,9 +444,9 @@ Matrix4x4 Camera::MakeOrthographicMatrix(float left, float top, float right, flo
 	result.m[0][0] = 2.0f / (right - left);
 	result.m[1][1] = 2.0f / (top - bottom);
 	result.m[2][2] = 1.0f / (farVal - nearVal);
-	result.m[0][3] = (left + right) / (left - right);
-	result.m[1][3] = (top + bottom) / (bottom - top);
-	result.m[2][3] = nearVal / (nearVal - farVal);
+	result.m[3][0] = (left + right) / (left - right);
+	result.m[3][1] = (top + bottom) / (bottom - top);
+	result.m[3][2] = nearVal / (nearVal - farVal);
 	result.m[3][3] = 1.0f;
 
 	// 返却する値
@@ -436,9 +471,9 @@ Matrix4x4 Camera::MakeViewPortMatrix(float left, float top, float width, float h
 	result.m[0][0] = width / 2.0f;
 	result.m[1][1] = -height / 2.0f;
 	result.m[2][2] = maxDepth - minDepth;
-	result.m[0][3] = left + width / 2.0f;
-	result.m[1][3] = top + height / 2.0f;
-	result.m[2][3] = minDepth;
+	result.m[3][0] = left + width / 2.0f;
+	result.m[3][1] = top + height / 2.0f;
+	result.m[3][2] = minDepth;
 	result.m[3][3] = 1.0f;
 
 	// 返却する値
@@ -464,9 +499,33 @@ Matrix4x4 Camera::MakePerspectiveForMatrix(float fovY, float aspectRatio, float 
 	result.m[0][0] = (1.0f / aspectRatio) * (1.0f / tanf(fovY / 2.0f));
 	result.m[1][1] = 1.0f / tanf(fovY / 2.0f);
 	result.m[2][2] = farClip / (farClip - nearClip);
-	result.m[3][2] = 1.0f;
-	result.m[2][3] = -(nearClip * farClip) / (farClip - nearClip);
+	result.m[2][3] = 1.0f;
+	result.m[3][2] = -(nearClip * farClip) / (farClip - nearClip);
 
 	// 返却する値
 	return result;
+}
+
+
+/*==================================================
+					更新処理
+==================================================*/
+void Camera::Update() {
+
+	// レンダリングパイプライン(wvppVp行列作成)
+	// カメラ
+	cameraMatrix_ = MakeAffineMatrix(scale_, theta_, pos_);
+	// ビュー
+	viewMatrix_ = Inverse(cameraMatrix_);
+	// 同時クリップ
+	perspectiveDevide_ = MakePerspectiveForMatrix(fovY_, aspectRatio_, nearClip_, farClip_);
+	// 正規化デバイス
+	projectionMatrix_ = MakeOrthographicMatrix(pos_.x - width_ / 2.0f, pos_.y + height_ / 2.0f, pos_.x + width_ / 2.0f, pos_.y - height_ / 2.0f, nearClip_, farClip_);
+	// ビューポート
+	viewportMatrix_ = MakeViewPortMatrix(pos_.x - width_ / 2.0f, pos_.y + height_ / 2.0f, width_, height_, minDepth_, maxDepth_);
+	// スクリーン
+	wvppVpMatrix_ = Multiply(viewMatrix_, perspectiveDevide_);
+	wvppVpMatrix_ = Multiply(wvppVpMatrix_, projectionMatrix_);
+	wvppVpMatrix_ = Multiply(wvppVpMatrix_, viewportMatrix_);
+
 }

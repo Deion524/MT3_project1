@@ -15,7 +15,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	// インスタンス生成
 	Camera* camera = new Camera();
-	camera->worldMatrix_ = camera->MakeAffineMatrix(camera->scale_, camera->theta_, camera->pos_);
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
@@ -30,6 +29,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		/// ↓更新処理ここから
 		///
 
+		camera->Update();
+
 		///
 		/// ↑更新処理ここまで
 		///
@@ -38,7 +39,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		/// ↓描画処理ここから
 		///
 
-		camera->Matrix4x4ScreenPrintf(camera->worldMatrix_, 16.0f, 16.0f);
+		camera->Matrix4x4ScreenPrintf(camera->wvppVpMatrix_, 16.0f, 16.0f);
 
 		///
 		/// ↑描画処理ここまで
@@ -53,6 +54,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		}
 	}
 
+	// メモリの解放
 	delete camera;
 
 	// ライブラリの終了
