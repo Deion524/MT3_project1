@@ -27,13 +27,15 @@ Camera::Camera() {
 			perspectiveDevide_.m[i][j] = 0.0f;
 			// ビューポート行列
 			viewportMatrix_.m[i][j] = 0.0f;
+			// WVP行列
+			wvpMatrix_.m[i][j] = 0.0f;
 			// スクリーン
 			wvppVpMatrix_.m[i][j] = 0.0f;
 		}
 	}
 
 	// カメラの位置
-	pos_ = { 500.0f,350.0f,10.0f };
+	pos_ = { 0.0f,0.0f,0.0f };
 	// 拡縮率
 	scale_ = { 1.0f,1.0f,1.0f };
 	// 角度
@@ -45,7 +47,7 @@ Camera::Camera() {
 	// 近平面
 	nearClip_ = 0.1f;
 	// 遠平面
-	farClip_ = 0.8f;
+	farClip_ = 100.0f;
 	// 画角
 	fovY_ = 1.0f;
 	// アスペクト比
@@ -58,9 +60,13 @@ Camera::Camera() {
 	// グリッド線(横)
 	gridLineGreenStart_ = { -width_,0.0f,0.0f };
 	gridLineGreenEnd_ = { width_,0.0f,0.0f };
+	screenGridLineGreenStart_ = gridLineGreenStart_;
+	screenGridLineGreenEnd_ = gridLineGreenEnd_;
 	// グリッド線(縦)
 	gridLineRedStart_ = { 0.0f,-height_,0.0f };
 	gridLineRedEnd_ = { 0.0f,height_,0.0f };
+	screenGridLineRedStart_ = gridLineRedStart_;
+	screenGridLineRedEnd_ = gridLineRedEnd_;
 
 
 }
@@ -508,11 +514,50 @@ Matrix4x4 Camera::MakePerspectiveForMatrix(float fovY, float aspectRatio, float 
 
 
 /*==================================================
+					移動処理
+==================================================*/
+void Camera::Move(char *keys) {
+	// 上下に移動
+	if (keys[DIK_W]) {
+		pos_.y += 6.0f;
+	} else if (keys[DIK_S]) {
+		pos_.y -= 6.0f;
+	}
+	// 左右に移動
+	if (keys[DIK_D]) {
+		pos_.x += 6.0f;
+	} else if (keys[DIK_A]) {
+		pos_.x -= 6.0f;
+	}
+}
+
+
+/*==================================================
+				グリッド線の更新処理
+==================================================*/
+void Camera::GridLine() {
+	/*Vector3 ndcVertex = Transform(gridLineGreenStart_, wvpMatrix_);
+	 screenGridLineGreenStart_= Transform(ndcVertex, viewportMatrix_);
+
+	 ndcVertex = Transform(gridLineGreenEnd_, wvpMatrix_);
+	 screenGridLineGreenEnd_ = Transform(ndcVertex, viewportMatrix_);
+
+	 ndcVertex = Transform(gridLineRedStart_, wvpMatrix_);
+	 screenGridLineRedStart_ = Transform(ndcVertex, viewportMatrix_);
+
+	 ndcVertex = Transform(gridLineRedEnd_, wvpMatrix_);
+	 screenGridLineRedEnd_ = Transform(ndcVertex, viewportMatrix_);*/
+}
+
+
+/*==================================================
 					更新処理
 ==================================================*/
 void Camera::Update() {
 
 	// レンダリングパイプライン(wvppVp行列作成)
+	// ワールド
+	worldMatrix_= MakeAffineMatrix(scale_, theta_, worldPos_);
 	// カメラ
 	cameraMatrix_ = MakeAffineMatrix(scale_, theta_, pos_);
 	// ビュー
@@ -520,12 +565,33 @@ void Camera::Update() {
 	// 同時クリップ
 	perspectiveDevide_ = MakePerspectiveForMatrix(fovY_, aspectRatio_, nearClip_, farClip_);
 	// 正規化デバイス
-	projectionMatrix_ = MakeOrthographicMatrix(pos_.x - width_ / 2.0f, pos_.y + height_ / 2.0f, pos_.x + width_ / 2.0f, pos_.y - height_ / 2.0f, nearClip_, farClip_);
+	projectionMatrix_ = MakeOrthographicMatrix(- width_ / 2.0f, height_ / 2.0f, width_ / 2.0f, - height_ / 2.0f, nearClip_, farClip_);
 	// ビューポート
-	viewportMatrix_ = MakeViewPortMatrix(pos_.x - width_ / 2.0f, pos_.y + height_ / 2.0f, width_, height_, minDepth_, maxDepth_);
+	viewportMatrix_ = MakeViewPortMatrix(0, 0, width_, height_, minDepth_, maxDepth_);
 	// スクリーン
 	wvppVpMatrix_ = Multiply(viewMatrix_, perspectiveDevide_);
 	wvppVpMatrix_ = Multiply(wvppVpMatrix_, projectionMatrix_);
 	wvppVpMatrix_ = Multiply(wvppVpMatrix_, viewportMatrix_);
 
+	// WVP行列
+	wvpMatrix_ = Multiply(worldMatrix_, Multiply(viewMatrix_, projectionMatrix_));
+
+}
+
+/*==================================================
+				グリッド線の描画処理
+==================================================*/
+void Camera::GridLineDraw() {
+	// 横線(緑)
+	Novice::DrawLine(
+		static_cast<int>(screenGridLineGreenStart_.x), static_cast<int>(screenGridLineGreenStart_.y),
+		static_cast<int>(screenGridLineGreenEnd_.x), static_cast<int>(screenGridLineGreenEnd_.y),
+		0x00FF00FF
+	);
+	// 縦線(赤)
+	Novice::DrawLine(
+		static_cast<int>(screenGridLineRedStart_.x), static_cast<int>(screenGridLineRedStart_.y),
+		static_cast<int>(screenGridLineRedEnd_.x), static_cast<int>(screenGridLineRedEnd_.y),
+		0x00FF00FF
+	);
 }

@@ -38,7 +38,12 @@ public:
 	Matrix4x4 MakePerspectiveForMatrix(float fovY, float aspectRatio, float nearClip, float farClip);
 
 	// 更新処理
+	void Move(char *keys);
+	void GridLine();
 	void Update();
+
+	// 描画処理
+	void GridLineDraw();
 
 //private:
 public:
@@ -58,7 +63,9 @@ public:
 	Matrix4x4 perspectiveDevide_;
 	// ビューポート行列
 	Matrix4x4 viewportMatrix_;
-	// スクリーン
+	// WVP行列
+	Matrix4x4 wvpMatrix_;
+	// スクリーン(まとめ)
 	Matrix4x4 wvppVpMatrix_;
 
 	// カメラの位置
@@ -87,9 +94,13 @@ public:
 	// グリッド線(横)
 	Vector3 gridLineGreenStart_;
 	Vector3 gridLineGreenEnd_;
+	Vector3 screenGridLineGreenStart_;
+	Vector3 screenGridLineGreenEnd_;
 	// グリッド線(縦)
 	Vector3 gridLineRedStart_;
 	Vector3 gridLineRedEnd_;
+	Vector3 screenGridLineRedStart_;
+	Vector3 screenGridLineRedEnd_;
 
 };
 

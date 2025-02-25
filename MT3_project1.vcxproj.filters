@@ -20,7 +20,7 @@
     <Filter Include="Matrix">
       <UniqueIdentifier>{ce9a4652-567b-42b5-ba09-6c82dc7f59b4}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Camera">
+    <Filter Include="KamataEngine\Camera">
       <UniqueIdentifier>{a3242f57-63ee-475b-bcb3-92d82dca3702}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -30,7 +30,7 @@
       <Filter>KamataEngine\Adapter</Filter>
     </ClCompile>
     <ClCompile Include="Camera.cpp">
-      <Filter>Camera</Filter>
+      <Filter>KamataEngine\Camera</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -122,7 +122,7 @@
       <Filter>Matrix</Filter>
     </ClInclude>
     <ClInclude Include="Camera.h">
-      <Filter>Camera</Filter>
+      <Filter>KamataEngine\Camera</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -16,6 +16,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// インスタンス生成
 	Camera* camera = new Camera();
 
+	// 三角形
+	Vector3 kLocalVertices[3];
+	Vector3 screenVertices[3];
+	for (int i = 0; i < 3; ++i) {
+		screenVertices[i] = { 0.0f,0.0f,0.0f };
+	}
+
+	kLocalVertices[0] = { 200.0f,350.0f,100.0f };
+	kLocalVertices[1] = { 300.0f,350.0f,100.0f };
+	kLocalVertices[2] = { 250.0f,300.0f,100.0f };
+
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
 		// フレームの開始
@@ -29,7 +40,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		/// ↓更新処理ここから
 		///
 
+		// カメラ
+		camera->Move(keys);
+		//camera->GridLine();
 		camera->Update();
+
+		// 三角形の頂点の計算
+		for (int i = 0; i < 3; ++i) {
+			Vector3 ndcVertex = camera->Transform(kLocalVertices[i], camera->wvpMatrix_);
+			screenVertices[i] = camera->Transform(ndcVertex, camera->viewportMatrix_);
+		}
 
 		///
 		/// ↑更新処理ここまで
@@ -39,7 +59,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		/// ↓描画処理ここから
 		///
 
-		camera->Matrix4x4ScreenPrintf(camera->wvppVpMatrix_, 16.0f, 16.0f);
+		// 三角形の描画
+		Novice::DrawTriangle(
+			static_cast<int>(screenVertices[0].x), static_cast<int>(screenVertices[0].y),
+			static_cast<int>(screenVertices[1].x), static_cast<int>(screenVertices[1].y),
+			static_cast<int>(screenVertices[2].x), static_cast<int>(screenVertices[2].y),
+			0xFFFFFFFF, kFillModeSolid
+		);
+
+		// グリッド線
+		camera->GridLineDraw();
+
+		// 行列の中身を描画
+		camera->Matrix4x4ScreenPrintf(camera->wvpMatrix_, 16.0f, 16.0f);
 
 		///
 		/// ↑描画処理ここまで
