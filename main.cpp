@@ -60,6 +60,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		grid->GridDraw(camera);;
 
 		// 三角形の頂点の計算
+#ifdef _DEBUG
 		ImGui::Begin("Triangle");
 		ImGui::SliderFloat("Triangle Z ", &kLocalVertices[0].z, 1.0f, 100.0f, "% 0.2f");
 		ImGui::End();
@@ -68,6 +69,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			//Vector3 ndcVertex = camera->Transform(kLocalVertices[i], camera->wvpMatrix_);
 			screenVertices[i] = camera->Transform(kLocalVertices[i], camera->wvppVpMatrix_);
 		}
+#endif // _DEBUG
 
 		// 球
 		SphereDraw(sphere, camera, 0xFF0000FF);
