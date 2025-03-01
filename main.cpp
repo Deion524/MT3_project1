@@ -1,5 +1,12 @@
 #include <Novice.h>
 #include "Camera.h"
+#include "Grid.h"
+#include "Sphere.h"
+
+#ifdef _DEBUG
+#include "imgui.h"
+#endif // _DEBUG
+
 
 const char kWindowTitle[] = "LC1A_09_ジェイムズディアンカイ_MT3_00-00";
 
@@ -15,6 +22,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	// インスタンス生成
 	Camera* camera = new Camera();
+	Grid* grid = new Grid();
+	Sphere sphere;
+	sphere.center = { 0.0f,0.0f,2.5f };
+	sphere.radius = 250.0f;
 
 	// 三角形
 	Vector3 kLocalVertices[3];
@@ -23,9 +34,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		screenVertices[i] = { 0.0f,0.0f,0.0f };
 	}
 
-	kLocalVertices[0] = { 200.0f,350.0f,100.0f };
-	kLocalVertices[1] = { 300.0f,350.0f,100.0f };
-	kLocalVertices[2] = { 250.0f,300.0f,100.0f };
+	kLocalVertices[0] = { 200.0f,350.0f,2.0f };
+	kLocalVertices[1] = { 300.0f,350.0f,2.0f };
+	kLocalVertices[2] = { 250.0f,300.0f,2.0f };
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
@@ -42,14 +53,24 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		// カメラ
 		camera->Move(keys);
-		//camera->GridLine();
+		camera->DebugWindow();
 		camera->Update();
 
+		// グリッド線
+		grid->GridDraw(camera);;
+
 		// 三角形の頂点の計算
+		ImGui::Begin("Triangle");
+		ImGui::SliderFloat("Triangle Z ", &kLocalVertices[0].z, 1.0f, 100.0f, "% 0.2f");
+		ImGui::End();
 		for (int i = 0; i < 3; ++i) {
-			Vector3 ndcVertex = camera->Transform(kLocalVertices[i], camera->wvpMatrix_);
-			screenVertices[i] = camera->Transform(ndcVertex, camera->viewportMatrix_);
+			kLocalVertices[i].z = kLocalVertices[0].z;
+			//Vector3 ndcVertex = camera->Transform(kLocalVertices[i], camera->wvpMatrix_);
+			screenVertices[i] = camera->Transform(kLocalVertices[i], camera->wvppVpMatrix_);
 		}
+
+		// 球
+		SphereDraw(sphere, camera, 0xFF0000FF);
 
 		///
 		/// ↑更新処理ここまで
@@ -71,7 +92,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		camera->GridLineDraw();
 
 		// 行列の中身を描画
-		camera->Matrix4x4ScreenPrintf(camera->wvpMatrix_, 16.0f, 16.0f);
+		camera->Matrix4x4ScreenPrintf(camera->worldMatrix_, 16.0f, 16.0f);
 
 		///
 		/// ↑描画処理ここまで
@@ -88,6 +109,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	// メモリの解放
 	delete camera;
+	delete grid;
 
 	// ライブラリの終了
 	Novice::Finalize();

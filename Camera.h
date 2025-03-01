@@ -18,11 +18,11 @@ public:
 	// 平行移動行列
 	Matrix4x4 Translate(Vector3 translate);
 	// 回転行列(Z軸中心)
-	Matrix4x4 MakeXYRotateMatrix(float theta);
+	Matrix4x4 MakeXYRotateMatrix(float roll);
 	// 回転行列(Y軸中心)
-	Matrix4x4 MakeXZRotateMatrix(float theta);
+	Matrix4x4 MakeXZRotateMatrix(float yaw);
 	// 回転行列(X軸中心)
-	Matrix4x4 MakeYZRotateMatrix(float theta);
+	Matrix4x4 MakeYZRotateMatrix(float pitch);
 	// アフィン行列
 	Matrix4x4 MakeAffineMatrix(Vector3 scale, Vector3 theta, Vector3 translate);
 	// 同時座標に変換
@@ -39,7 +39,7 @@ public:
 
 	// 更新処理
 	void Move(char *keys);
-	void GridLine();
+	void DebugWindow();
 	void Update();
 
 	// 描画処理

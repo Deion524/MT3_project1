@@ -23,6 +23,12 @@
     <Filter Include="KamataEngine\Camera">
       <UniqueIdentifier>{a3242f57-63ee-475b-bcb3-92d82dca3702}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Grid">
+      <UniqueIdentifier>{f2bd0f8f-b520-48b0-ae09-19fcfd430aaf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sphere">
+      <UniqueIdentifier>{bd81d9ef-7eca-419f-8616-0f3401dec634}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
@@ -31,6 +37,9 @@
     </ClCompile>
     <ClCompile Include="Camera.cpp">
       <Filter>KamataEngine\Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="Grid.cpp">
+      <Filter>Grid</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -123,6 +132,12 @@
     </ClInclude>
     <ClInclude Include="Camera.h">
       <Filter>KamataEngine\Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="Grid.h">
+      <Filter>Grid</Filter>
+    </ClInclude>
+    <ClInclude Include="Sphere.h">
+      <Filter>Sphere</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

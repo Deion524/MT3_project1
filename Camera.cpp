@@ -4,6 +4,11 @@
 #include <math.h>
 #include <Novice.h>
 
+#ifdef _DEBUG
+#include <imgui.h>
+#endif // _DEBUG
+
+
 /*==================================================
 				コンストラクタとデストラクタ
 ==================================================*/
@@ -35,7 +40,7 @@ Camera::Camera() {
 	}
 
 	// カメラの位置
-	pos_ = { 0.0f,0.0f,0.0f };
+	pos_ = { 0.0,200.0f,-1.0f };
 	// 拡縮率
 	scale_ = { 1.0f,1.0f,1.0f };
 	// 角度
@@ -47,7 +52,7 @@ Camera::Camera() {
 	// 近平面
 	nearClip_ = 0.1f;
 	// 遠平面
-	farClip_ = 100.0f;
+	farClip_ = 1000.0f;
 	// 画角
 	fovY_ = 1.0f;
 	// アスペクト比
@@ -238,7 +243,7 @@ Matrix4x4 Camera::Translate(Vector3 translate) {
 					回転行列
 ==================================================*/
 // XY軸の回転
-Matrix4x4 Camera::MakeXYRotateMatrix(float theta) {
+Matrix4x4 Camera::MakeXYRotateMatrix(float roll) {
 
 	// 戻り値
 	Matrix4x4 result;
@@ -251,21 +256,21 @@ Matrix4x4 Camera::MakeXYRotateMatrix(float theta) {
 	}
 
 	// 回転行列の作成
+	result.m[0][0] = cosf(roll);
+	result.m[0][1] = sinf(roll);
+
+	result.m[1][0] = -sinf(roll);
+	result.m[1][1] = cosf(roll);
+
 	result.m[2][2] = 1.0f;
 	result.m[3][3] = 1.0f;
-
-	result.m[0][0] = cosf(theta);
-	result.m[1][0] = sinf(theta);
-
-	result.m[0][1] = -sinf(theta);
-	result.m[1][1] = cosf(theta);
 
 	// 返却する値
 	return result;
 }
 
 // XZ軸の回転
-Matrix4x4 Camera::MakeXZRotateMatrix(float theta) {
+Matrix4x4 Camera::MakeXZRotateMatrix(float yaw) {
 
 	// 戻り値
 	Matrix4x4 result;
@@ -281,18 +286,18 @@ Matrix4x4 Camera::MakeXZRotateMatrix(float theta) {
 	result.m[1][1] = 1.0f;
 	result.m[3][3] = 1.0f;
 
-	result.m[0][0] = cosf(theta);
-	result.m[2][0] = -sinf(theta);
+	result.m[0][0] = cosf(yaw);
+	result.m[2][0] = sinf(yaw);
 
-	result.m[0][2] = sinf(theta);
-	result.m[2][2] = cosf(theta);
+	result.m[0][2] = -sinf(yaw);
+	result.m[2][2] = cosf(yaw);
 
 	// 返却する値
 	return result;
 }
 
 // YZ軸の回転
-Matrix4x4 Camera::MakeYZRotateMatrix(float theta) {
+Matrix4x4 Camera::MakeYZRotateMatrix(float pitch) {
 
 	// 戻り値
 	Matrix4x4 result;
@@ -308,11 +313,11 @@ Matrix4x4 Camera::MakeYZRotateMatrix(float theta) {
 	result.m[0][0] = 1.0f;
 	result.m[3][3] = 1.0f;
 
-	result.m[1][1] = cosf(theta);
-	result.m[2][1] = sinf(theta);
+	result.m[1][1] = cosf(pitch);
+	result.m[2][1] = -sinf(pitch);
 
-	result.m[1][2] = -sinf(theta);
-	result.m[2][2] = cosf(theta);
+	result.m[1][2] = sinf(pitch);
+	result.m[2][2] = cosf(pitch);
 
 	// 返却する値
 	return result;
@@ -351,26 +356,11 @@ Matrix4x4 Camera::MakeAffineMatrix(Vector3 scale, Vector3 theta, Vector3 transla
 	scaleMatrix.m[3][3] = 1.0f;
 
 	// 行列の計算(回転XY)
-	rotateXYMatrix.m[2][2] = 1.0f;
-	rotateXYMatrix.m[3][3] = 1.0f;
-	rotateXYMatrix.m[0][0] = cosf(theta.z);
-	rotateXYMatrix.m[1][0] = sinf(theta.z);
-	rotateXYMatrix.m[0][1] = -sinf(theta.z);
-	rotateXYMatrix.m[1][1] = cosf(theta.z);
+	rotateXYMatrix = MakeXYRotateMatrix(theta.z);
 	// 行列の計算(回転XZ)
-	rotateXZMatrix.m[1][1] = 1.0f;
-	rotateXZMatrix.m[3][3] = 1.0f;
-	rotateXZMatrix.m[0][0] = cosf(theta.y);
-	rotateXZMatrix.m[2][0] = -sinf(theta.y);
-	rotateXZMatrix.m[0][2] = sinf(theta.y);
-	rotateXZMatrix.m[2][2] = cosf(theta.y);
+	rotateXZMatrix = MakeXZRotateMatrix(theta.y);
 	// 行列の計算(回転YZ)
-	rotateYZMatrix.m[0][0] = 1.0f;
-	rotateYZMatrix.m[3][3] = 1.0f;
-	rotateYZMatrix.m[1][1] = cosf(theta.x);
-	rotateYZMatrix.m[2][1] = sinf(theta.x);
-	rotateYZMatrix.m[1][2] = -sinf(theta.x);
-	rotateYZMatrix.m[2][2] = cosf(theta.x);
+	rotateYZMatrix = MakeYZRotateMatrix(theta.x);
 	// 回転行列の結合
 	rotateMatrix = Multiply(rotateXYMatrix, Multiply(rotateXZMatrix, rotateYZMatrix));
 
@@ -516,7 +506,7 @@ Matrix4x4 Camera::MakePerspectiveForMatrix(float fovY, float aspectRatio, float 
 /*==================================================
 					移動処理
 ==================================================*/
-void Camera::Move(char *keys) {
+void Camera::Move(char* keys) {
 	// 上下に移動
 	if (keys[DIK_W]) {
 		pos_.y += 6.0f;
@@ -533,22 +523,22 @@ void Camera::Move(char *keys) {
 
 
 /*==================================================
-				グリッド線の更新処理
+				デバッグウィンドウ
 ==================================================*/
-void Camera::GridLine() {
-	/*Vector3 ndcVertex = Transform(gridLineGreenStart_, wvpMatrix_);
-	 screenGridLineGreenStart_= Transform(ndcVertex, viewportMatrix_);
+void Camera::DebugWindow() {
+#ifdef _DEBUG
+	ImGui::Begin("Camera");
+	ImGui::DragFloat("Translate X ", &pos_.x, 2.0f, -1000.0f, 1000.0f, "%0.2f");
+	ImGui::DragFloat("Translate Y ", &pos_.y, 2.0f, -1000.0f, 1000.0f, "%0.2f");
+	ImGui::DragFloat("Translate Z ", &pos_.z, 2.0f, -1000.0f, 1000.0f, "%0.2f");
+	ImGui::DragFloat("FovY ", &fovY_, 0.1f, -100.0f, 100.0f, "%0.2f");
+	ImGui::SliderFloat("Pitch", &theta_.x, -10.0f, 10.0f, "%0.2f");
+	ImGui::SliderFloat("Yaw", &theta_.y, -10.0f, 10.0f, "%0.2f");
+	ImGui::SliderFloat("Roll", &theta_.z, -10.0f, 10.0f, "%0.2f");
+	ImGui::End();
+#endif // _DEBUG
 
-	 ndcVertex = Transform(gridLineGreenEnd_, wvpMatrix_);
-	 screenGridLineGreenEnd_ = Transform(ndcVertex, viewportMatrix_);
-
-	 ndcVertex = Transform(gridLineRedStart_, wvpMatrix_);
-	 screenGridLineRedStart_ = Transform(ndcVertex, viewportMatrix_);
-
-	 ndcVertex = Transform(gridLineRedEnd_, wvpMatrix_);
-	 screenGridLineRedEnd_ = Transform(ndcVertex, viewportMatrix_);*/
 }
-
 
 /*==================================================
 					更新処理
@@ -557,7 +547,7 @@ void Camera::Update() {
 
 	// レンダリングパイプライン(wvppVp行列作成)
 	// ワールド
-	worldMatrix_= MakeAffineMatrix(scale_, theta_, worldPos_);
+	worldMatrix_ = MakeAffineMatrix(scale_, theta_, worldPos_);
 	// カメラ
 	cameraMatrix_ = MakeAffineMatrix(scale_, theta_, pos_);
 	// ビュー
@@ -565,7 +555,7 @@ void Camera::Update() {
 	// 同時クリップ
 	perspectiveDevide_ = MakePerspectiveForMatrix(fovY_, aspectRatio_, nearClip_, farClip_);
 	// 正規化デバイス
-	projectionMatrix_ = MakeOrthographicMatrix(- width_ / 2.0f, height_ / 2.0f, width_ / 2.0f, - height_ / 2.0f, nearClip_, farClip_);
+	projectionMatrix_ = MakeOrthographicMatrix(-width_ / 2.0f, height_ / 2.0f, width_ / 2.0f, -height_ / 2.0f, nearClip_, farClip_);
 	// ビューポート
 	viewportMatrix_ = MakeViewPortMatrix(0, 0, width_, height_, minDepth_, maxDepth_);
 	// スクリーン
@@ -574,7 +564,8 @@ void Camera::Update() {
 	wvppVpMatrix_ = Multiply(wvppVpMatrix_, viewportMatrix_);
 
 	// WVP行列
-	wvpMatrix_ = Multiply(worldMatrix_, Multiply(viewMatrix_, projectionMatrix_));
+	//wvpMatrix_ = Multiply(worldMatrix_, Multiply(viewMatrix_, projectionMatrix_));
+	wvpMatrix_ = Multiply(viewMatrix_, Multiply(perspectiveDevide_, projectionMatrix_));
 
 }
 
